@@ -8,14 +8,13 @@ String authenticationToken;
 class MyApp extends StatelessWidget {
 
   Future<String> connect() async{
-    var result = await SpotifySdk.connectToSpotifyRemote(
-          clientId: "ef24a50a6c864dbd8d1d364412386158", redirectUrl:"http://mysite.com/callback/");
-
     try{
-      
-    var authenticationToken = await SpotifySdk.getAuthenticationToken(clientId: "ef24a50a6c864dbd8d1d364412386158", redirectUrl:"http://mysite.com/callback/");
-    return authenticationToken;
-
+      // This is needed to control spotify app (play, skip, pause, etc)
+      await SpotifySdk.connectToSpotifyRemote(
+          clientId: "ef24a50a6c864dbd8d1d364412386158", redirectUrl:"http://mysite.com/callback/");
+      // This token is needed to search in the API
+      var authenticationToken = await SpotifySdk.getAuthenticationToken(clientId: "ef24a50a6c864dbd8d1d364412386158", redirectUrl:"http://mysite.com/callback/");
+      return authenticationToken;
     }catch(e){
       debugPrint(e.toString());
     }
@@ -26,6 +25,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     connect().then((token){
       authenticationToken = token;
+      debugPrint(authenticationToken);
     });
 
     return MaterialApp(
@@ -70,7 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<void> play() async {
     try {
-      await SpotifySdk.play(spotifyUri: "spotify:track:5xy3350chgFfFcdTET4xz3");
+      await SpotifySdk.play(spotifyUri: "spotify:track:4GeuGxSl1IiRzgxSLWAFzT");
     } catch(e){
       debugPrint(e.toString());
     }
@@ -139,8 +139,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-  
-      
     );
   }
 }
