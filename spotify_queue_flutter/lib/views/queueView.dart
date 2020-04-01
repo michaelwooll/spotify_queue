@@ -3,6 +3,8 @@ import 'package:spotify_sdk/spotify_sdk.dart';
 import 'package:spotify_queue/models/room.dart';
 import 'package:spotify_queue/models/song.dart';
 import 'package:spotify_sdk/models/player_state.dart';
+import 'package:spotify_sdk/models/player_state.dart';
+
 
 
 class QueuePage extends StatelessWidget{
@@ -27,6 +29,7 @@ class QueueView extends StatefulWidget {
 class _QueueViewState extends State<QueueView> {
   Room room;
   bool initialized = false;
+  Song currentSong;
 
   @override
   void initState() {
@@ -38,7 +41,7 @@ class _QueueViewState extends State<QueueView> {
         room = roomObject; 
       });
     });
-    //queueController();
+    queueController();
   }
 
   Future<void> queueController() async{
@@ -60,6 +63,9 @@ class _QueueViewState extends State<QueueView> {
             if(q != null){
               SpotifySdk.queue(spotifyUri: q.getURI());
               notQueued = false;
+              setState(() {
+                
+              });
             }
           }
         }
@@ -126,6 +132,13 @@ class _QueueViewState extends State<QueueView> {
       debugPrint("Success!");
         if(room.queueIsEmpty()){
           children.add(Text("No songs currently in queue"));
+          children.add(PlayerStateWidget());
+           children.add(
+            RaisedButton(
+              onPressed: addSong,
+              child:Text("Add 3 songs")
+            )
+          );
         }
         else{
           children.add(Text("Current queue"));
@@ -152,6 +165,7 @@ class _QueueViewState extends State<QueueView> {
               child:Text("Add 3 songs")
             )
           );
+          children.add(PlayerStateWidget());
         }
     }
     return Scaffold(
@@ -166,3 +180,37 @@ class _QueueViewState extends State<QueueView> {
     );
   }
 }
+
+
+ Widget PlayerStateWidget() {
+    return StreamBuilder<PlayerState>(
+      stream: SpotifySdk.subscribePlayerState(),
+      initialData: PlayerState(null, false, 1, 1, null, null),
+      builder: (BuildContext context, AsyncSnapshot<PlayerState> snapshot) {
+        if (snapshot.data != null && snapshot.data.track != null) {
+          var playerState = snapshot.data;
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                  "${playerState.track.name} by ${playerState.track.artist.name} from the album ${playerState.track.album.name} "),
+              Text("Speed: ${playerState.playbackSpeed}"),
+              Text(
+                  "Progress: ${playerState.playbackPosition}ms/${playerState.track.duration}ms"),
+              Text("IsPaused: ${playerState.isPaused}"),
+              Text("Is Shuffling: ${playerState.playbackOptions.isShuffling}"),
+              Text("RepeatMode: ${playerState.playbackOptions.repeatMode}"),
+              Text("Image URI: ${playerState.track.imageUri.raw}"),
+              Text(
+                  "Is episode? ${playerState.track.isEpisode}. Is podcast?: ${playerState.track.isPodcast}"),
+            ],
+          );
+        } else {
+          return Center(
+            child: Text("Not connected"),
+          );
+        }
+      },
+    );
+  }

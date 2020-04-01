@@ -10,11 +10,10 @@ import 'package:spotify_queue/models/song.dart';
 
 class Room extends DatabaseObject{
   String _adminToken;
-  Queue _queue;
+  Queue _queue = new Queue();
   List<String> _users;
 
   Room(this._adminToken):super("room"){
-    Queue q = new Queue();
     _users = [];
     saveToDatabase().then((docID){
       setDocID(docID);
