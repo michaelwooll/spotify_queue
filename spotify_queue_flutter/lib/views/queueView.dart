@@ -27,24 +27,7 @@ class QueueView extends StatefulWidget {
 class _QueueViewState extends State<QueueView> {
   Room room;
   bool initialized = false;
-  bool queueIdSet = false;
- // bool songIsPaused = true;
 
-  void queueIDTimer(Duration interval, Room r, int maxIter) async {
-    int i = 0;
-    while (i < maxIter) {
-      debugPrint("Checking queue id");
-      await Future.delayed(interval);
-      if(r.getQueueID() != null){
-        setState(() {
-          queueIdSet = true;
-        });
-        return;
-      }
-      i++;
-    }
-    debugPrint("failed");
-  }
   @override
   void initState() {
     super.initState();
@@ -120,8 +103,7 @@ class _QueueViewState extends State<QueueView> {
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [];
-    bool done = false;
-    if(room == null && !queueIdSet){
+    if(room == null){
        children = <Widget>[const Padding(
               padding: EdgeInsets.only(top: 100),
             ),
@@ -139,39 +121,15 @@ class _QueueViewState extends State<QueueView> {
               )
             )
        ];
-       done = true;
-    }
-    else if(!queueIdSet){
-      children = <Widget>[const Padding(
-              padding: EdgeInsets.only(top: 100),
-            ),
-            Center(
-              child: SizedBox(
-              child: CircularProgressIndicator(),
-              width: 100,
-              height: 100,
-            )
-            ),
-            const Padding(
-              padding: EdgeInsets.only(top: 20),
-              child: Center(
-                child: Text('Creating room...'),
-              )
-            )
-       ];
-      queueIDTimer(Duration(milliseconds: 500), room, 10);
-      done = true;
-      
     }
     else{
       debugPrint("Success!");
-      room.getQueue().then((queue){
-        if(queue.songs.isEmpty){
+        if(room.queueIsEmpty()){
           children.add(Text("No songs currently in queue"));
         }
         else{
           children.add(Text("Current queue"));
-          for(var s in queue.songs){
+          for(var s in room.getSongs()){
             children.add(Text(s.toString()));
           }
           children.add(
@@ -195,10 +153,7 @@ class _QueueViewState extends State<QueueView> {
             )
           );
         }
-        done = true;
-      });
     }
-    while(!done);
     return Scaffold(
             appBar: AppBar(
         title: Text("Your room"),

@@ -10,35 +10,38 @@ import 'package:spotify_queue/models/song.dart';
 
 class Room extends DatabaseObject{
   String _adminToken;
-  String _queueID;
+  Queue _queue;
   List<String> _users;
 
   Room(this._adminToken):super("room"){
     Queue q = new Queue();
     _users = [];
-    q.createQueue().then((queueID){
-      _queueID = queueID;
-      saveToDatabase().then((docID){
+    saveToDatabase().then((docID){
       setDocID(docID);
-    });
     });
   }
 
   Room.fromDocumentSnapshot(DocumentSnapshot ds):super("room"){
     _adminToken = ds.data["adminToken"];
-    _queueID = ds.data["queue"];
+    _queue.fromJSON(ds.data["queue"]);
     for(var u in ds.data["users"]){
       _users.add(u);
     }
     setDocID(ds.documentID);
   }
 
-  String getQueueID() => _queueID;
+  bool queueIsEmpty(){
+    return _queue.songs.isEmpty;
+  }
+
+  List<Song> getSongs(){
+    return _queue.songs;
+  }
 
   @override
   Map<String, dynamic> toJson() => {
     'adminToken' : _adminToken,
-    'queue' : _queueID,
+    'queue' : _queue.toJson(),
     'users' :_users
   };
 
@@ -53,24 +56,17 @@ class Room extends DatabaseObject{
     }
   }
 
-  Future<Queue> getQueue() async {
-    DocumentSnapshot doc = await Firestore.instance.collection("queue").document(_queueID).snapshots().first;
-    return Queue.fromDocumentSnapshot(doc);
-  }
-
 
   Future<void> addSong(String songURI) async{
-    // First grab the queue.
-    Queue q = await getQueue();
-    q.addSong(Song(songURI));
+    _queue.addSong(Song(songURI));
     saveToDatabase();
   }
 
-  Future<Song> pop() async {
-    Queue q = await getQueue();
-    return q.pop();
+  Future<Song> pop() async{
+    Song s =_queue.pop();
+    await saveToDatabase();
+    return s;
   }
-  //Future<Song
 }
 
 Future<Room> getRoomById(String docID) async{
