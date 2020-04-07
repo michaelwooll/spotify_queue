@@ -56,8 +56,8 @@ class Room extends DatabaseObject{
   }
 
 
-  Future<void> addSong(String songURI) async{
-    _queue.addSong(Song(songURI));
+  Future<void> addSong(Song song) async{
+    _queue.addSong(song);
     saveToDatabase();
   }
 
@@ -66,7 +66,13 @@ class Room extends DatabaseObject{
     await saveToDatabase();
     return s;
   }
+  Future<void> vote(int i) async{
+    _queue.vote(i);
+    saveToDatabase();
+  }
 }
+
+
 
 Future<Room> getRoomById(String docID) async{
   DocumentSnapshot doc = await Firestore.instance.collection("room").document(docID).snapshots().first;

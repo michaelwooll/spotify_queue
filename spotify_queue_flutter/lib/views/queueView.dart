@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:spotify_queue/widgets/songWidgets.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
 import 'package:spotify_queue/models/room.dart';
 import 'package:spotify_queue/models/song.dart';
 import 'package:spotify_sdk/models/player_state.dart';
-import 'package:spotify_sdk/models/player_state.dart';
+import 'package:spotify_queue/spotifyAPI.dart';
+
 
 
 
@@ -20,15 +22,16 @@ class QueuePage extends StatelessWidget{
 }
 
 class QueueView extends StatefulWidget {
-  QueueView({Key key, this.roomID}):super(key:key);
+  QueueView({Key key, this.roomID,this.authToken}):super(key:key);
   final String roomID;
+  final String authToken;
+
   @override
   _QueueViewState createState() => _QueueViewState();
 }
 
 class _QueueViewState extends State<QueueView> {
   Room room;
-  bool initialized = false;
   Song currentSong;
 
   @override
@@ -40,32 +43,27 @@ class _QueueViewState extends State<QueueView> {
       setState(() {
         room = roomObject; 
       });
+      queueController();
     });
-    queueController();
   }
 
   Future<void> queueController() async{
-    bool notQueued = true;
     int timeLeft;
     while(true){
       await Future.delayed(Duration(milliseconds: 100));
       PlayerState state = await SpotifySdk.getPlayerState();
       if(state.track != null){
         timeLeft = state.track.duration - state.playbackPosition;
-        if(timeLeft > 3000){
-          notQueued = true;
-        }
-        debugPrint("timeleft: " + timeLeft.toString());
-        if(timeLeft <= 3000 && notQueued){
-          debugPrint("queueing next song");
+ 
+        if(timeLeft <= 3000){
           if(room != null){
-            Song q = await room.pop();
-            if(q != null){
-              SpotifySdk.queue(spotifyUri: q.getURI());
-              notQueued = false;
-              setState(() {
-                
-              });
+            Song song = await room.pop();
+            setState(() {
+                currentSong = song;
+            });
+            if(song != null){
+              SpotifySdk.queue(spotifyUri: song.getURI());
+              await Future.delayed(Duration(seconds: 5));
             }
           }
         }
@@ -73,23 +71,38 @@ class _QueueViewState extends State<QueueView> {
     }
   }
 
-   void addSong() async{
-    await room.addSong("spotify:track:4fPBB44eDH71YohayI4eKV");
-    await room.addSong("spotify:track:6lnnaGN20kl0jEYJSxCgU9");
-    await room.addSong("spotify:track:0dy6iXYIF0piirySAzCBwF");
-    if(!initialized){
+  void testSearch(String input) async {
+    Map<String,List<String>> results = await search(input,widget.authToken);
+    List<Song> songs = await searchTracks(results["tracks"],widget.authToken);
+    for(var i = 0; i < 3 && i  < songs.length; i++){
+      room.addSong(songs[i]);
+    }
+    if(currentSong == null){
       Song song = await room.pop();
       SpotifySdk.play(spotifyUri: song.getURI());
       setState(() {
-        initialized = true;
+        currentSong = song;
+      });
+    }
+    else{
+      setState((){}); // Force a setState because room as been changed
+    }
+  } 
+/*
+   void play() async{
+    if(currentSong == null){
+      Song song = await room.pop();
+      SpotifySdk.play(spotifyUri: song.getURI());
+      setState(() {
+        currentSong = song;
       });
     }
     else{
       setState((){}); // Force a setState because room as been changed
     }
   }
-
-  void play() async{
+*/
+  void resume() async{
     try {
       await SpotifySdk.resume();
     } catch(e){
@@ -129,25 +142,50 @@ class _QueueViewState extends State<QueueView> {
        ];
     }
     else{
-      debugPrint("Success!");
         if(room.queueIsEmpty()){
           children.add(Text("No songs currently in queue"));
-          children.add(PlayerStateWidget());
-           children.add(
+          if(currentSong != null){
+          children.add(
+              Column(
+                children: <Widget>[
+                  Text("Now Playing:"),
+                  SongCard(song: currentSong)
+                ]));
+          }
+          // children.add(playerStateWidget());
+            children.add(
             RaisedButton(
-              onPressed: addSong,
-              child:Text("Add 3 songs")
+              onPressed: () => testSearch("Powfu"),
+              child:Text("Add 3 searched songs")
             )
           );
         }
         else{
-          children.add(Text("Current queue"));
-          for(var s in room.getSongs()){
-            children.add(Text(s.toString()));
+          room.getSongs().asMap().forEach((index,song){
+              children.add(
+                GestureDetector(
+                  child: SongCard(song: song), 
+                  onTap: (){
+                    room.vote(index);
+                    setState(() {
+                      
+                    });
+                  }
+                  ,)
+                );
+          });
+          if(currentSong != null){
+            //children.add(Text("Current song: " + currentSong.toString()));
+            children.add(
+              Column(
+                children: <Widget>[
+                  Text("Now Playing:"),
+                  SongCard(song: currentSong)
+                ]));
           }
           children.add(
             FloatingActionButton(
-                  onPressed: play,
+                  onPressed: resume,
                   tooltip: 'Play',
                   child: Icon(Icons.play_arrow),
               )
@@ -159,13 +197,13 @@ class _QueueViewState extends State<QueueView> {
                   child: Icon(Icons.pause),
               )
           );
-          children.add(
+           children.add(
             RaisedButton(
-              onPressed: addSong,
-              child:Text("Add 3 songs")
+              onPressed: () => testSearch("Powfu"),
+              child:Text("Add 3 searched songs")
             )
           );
-          children.add(PlayerStateWidget());
+       // children.add(playerStateWidget());
         }
     }
     return Scaffold(
@@ -182,9 +220,10 @@ class _QueueViewState extends State<QueueView> {
 }
 
 
- Widget PlayerStateWidget() {
+/* Adapted from https://github.com/brim-borium/spotify_sdk/blob/develop/example/lib/main.dart */
+Widget playerStateWidget() {
     return StreamBuilder<PlayerState>(
-      stream: SpotifySdk.subscribePlayerState(),
+      stream: subscribeMyPlayerState(),
       initialData: PlayerState(null, false, 1, 1, null, null),
       builder: (BuildContext context, AsyncSnapshot<PlayerState> snapshot) {
         if (snapshot.data != null && snapshot.data.track != null) {
@@ -198,6 +237,11 @@ class _QueueViewState extends State<QueueView> {
               Text("Speed: ${playerState.playbackSpeed}"),
               Text(
                   "Progress: ${playerState.playbackPosition}ms/${playerState.track.duration}ms"),
+              LinearProgressIndicator(
+                value: (playerState.playbackPosition/playerState.track.duration),
+                backgroundColor: Colors.grey,
+                valueColor: AlwaysStoppedAnimation<Color>(Colors.blueGrey)
+              ),
               Text("IsPaused: ${playerState.isPaused}"),
               Text("Is Shuffling: ${playerState.playbackOptions.isShuffling}"),
               Text("RepeatMode: ${playerState.playbackOptions.repeatMode}"),
@@ -214,3 +258,13 @@ class _QueueViewState extends State<QueueView> {
       },
     );
   }
+
+Stream<PlayerState> subscribeMyPlayerState() async*{
+  while(true){
+    await Future.delayed(Duration(milliseconds: 750));
+    PlayerState state = await SpotifySdk.getPlayerState();
+    if(state != null){
+      yield state;
+    }
+  }
+}

@@ -5,7 +5,6 @@ import 'package:spotify_queue/views/queueView.dart';
 
 
 
-
 var clientid = "ef24a50a6c864dbd8d1d364412386158";
 
 void main() => runApp(MyApp());
@@ -56,6 +55,8 @@ class _MyHomePageState extends State<MyHomePage> {
     connect();
   }
 
+
+
   void timedCounter(Duration interval, Room r, BuildContext context, int maxIter) async {
       debugPrint("Called");
     setState(() {
@@ -68,7 +69,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if(r.getDocID() != null){
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context){
-            return QueueView(roomID: r.getDocID());
+            return QueueView(roomID: r.getDocID(), authToken: authenticationToken);
           })
         );
         return;
@@ -164,4 +165,3 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
-

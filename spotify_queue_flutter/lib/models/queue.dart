@@ -13,14 +13,11 @@ class Queue{
   void addSong(Song s){
     songs.add(s);
     songs.sort((b,a) => a.compareTo(b));
-
   }
 
   Song pop(){
-    if(songs.length > 0){
-      Song first = songs.first;
-      songs.removeAt(0);
-      return first;
+    if(songs.isNotEmpty){
+      return songs.removeAt(0);
     }
     return null;
   }
