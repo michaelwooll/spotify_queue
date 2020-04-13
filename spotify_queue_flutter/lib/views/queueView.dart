@@ -3,8 +3,12 @@ import 'package:spotify_queue/widgets/songWidgets.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
 import 'package:spotify_queue/models/room.dart';
 import 'package:spotify_queue/models/song.dart';
+import 'package:spotify_queue/models/album.dart';
+
 import 'package:spotify_sdk/models/player_state.dart';
 import 'package:spotify_queue/spotifyAPI.dart';
+
+String hardCodedSearchValue = "Powfu";
 
 
 
@@ -33,6 +37,7 @@ class QueueView extends StatefulWidget {
 class _QueueViewState extends State<QueueView> {
   Room room;
   Song currentSong;
+  TextEditingController searchCon = new TextEditingController();
 
   @override
   void initState() {
@@ -43,7 +48,7 @@ class _QueueViewState extends State<QueueView> {
       setState(() {
         room = roomObject; 
       });
-      queueController();
+     // queueController();
     });
   }
 
@@ -88,20 +93,7 @@ class _QueueViewState extends State<QueueView> {
       setState((){}); // Force a setState because room as been changed
     }
   } 
-/*
-   void play() async{
-    if(currentSong == null){
-      Song song = await room.pop();
-      SpotifySdk.play(spotifyUri: song.getURI());
-      setState(() {
-        currentSong = song;
-      });
-    }
-    else{
-      setState((){}); // Force a setState because room as been changed
-    }
-  }
-*/
+
   void resume() async{
     try {
       await SpotifySdk.resume();
@@ -117,6 +109,11 @@ class _QueueViewState extends State<QueueView> {
       debugPrint(e.toString());
     }
   }
+
+void test(String input) async {
+  Map<String,List<dynamic>> results = await fullSearch(input,widget.authToken);
+
+}
 
   
   @override
@@ -142,6 +139,13 @@ class _QueueViewState extends State<QueueView> {
        ];
     }
     else{
+        children.add(TextField(
+          controller: searchCon,
+          decoration: InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: 'Search',
+          )
+          ));
         if(room.queueIsEmpty()){
           children.add(Text("No songs currently in queue"));
           if(currentSong != null){
@@ -155,8 +159,8 @@ class _QueueViewState extends State<QueueView> {
           // children.add(playerStateWidget());
             children.add(
             RaisedButton(
-              onPressed: () => testSearch("Powfu"),
-              child:Text("Add 3 searched songs")
+              onPressed: () => test(searchCon.text),
+              child:Text("Test")
             )
           );
         }
@@ -199,7 +203,7 @@ class _QueueViewState extends State<QueueView> {
           );
            children.add(
             RaisedButton(
-              onPressed: () => testSearch("Powfu"),
+              onPressed: () => testSearch(searchCon.text),
               child:Text("Add 3 searched songs")
             )
           );

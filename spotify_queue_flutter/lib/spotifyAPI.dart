@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:spotify_queue/models/song.dart';
+import 'package:spotify_queue/models/album.dart';
+
 
 /// Takes in a [input] search string, an [authToken], and a [limit] which defaults to 20
 /// Uses spotify API to return a map where
@@ -164,7 +166,6 @@ Future<List<Song>> searchTracks(List<String> trackUriList,String authToken) asyn
           }
         }// end if album != null
         ret.add(Song(uri,songName,albumCovers,albumName,artists));
-
       }
 
     } // end try
@@ -172,4 +173,118 @@ Future<List<Song>> searchTracks(List<String> trackUriList,String authToken) asyn
       debugPrint(e.toString());
     }
     return ret;
+}
+
+Future<List<Album>> searchAlbums(List<String> albumURIList,String authToken) async {
+  List<Album> ret = [];
+  try{
+      String albumIds = "";
+      for(var a in albumURIList){
+
+        // Replace spotify:track: with emptry string
+        String formatted = a.replaceAll(new RegExp(r'spotify:album:'), "");
+
+        // only add comma to list if it is NOT the last item
+        if(a != albumURIList.last){
+          formatted += ",";
+        }
+        // Add to comma seperated list
+        albumIds += formatted;
+      }
+
+      // Base url
+      String url = "https://api.spotify.com/v1/albums/?ids=$albumIds";
+
+      // Format authentication token for header
+      String token = "Bearer " + authToken;
+
+      
+      // Get request API and wait for response
+      var response = await http.get(url, headers: {HttpHeaders.authorizationHeader: token});
+      // Parse information and return list of Song objects
+      // Decode the result
+      Map<String,dynamic> result = json.decode(response.body);
+      List<dynamic> albums = result["albums"];
+      for(var a in albums){
+          //Album(this._uri, this._artists, this._albumCovers,this._albumName, this._songs);
+          String uri;
+          List<Map<String,String>> artists = [];
+          String albumName;
+          List<Map<String,dynamic>> albumCovers =[];
+          //Song(this._uri, this._songName, this._albumCovers, this._albumName, this._artists);
+
+        // Get URI
+        uri = a["uri"];
+        // Get name
+        albumName = a["name"];
+        // Get artists
+        for(var artist in a["artists"]){
+          artists.add({
+            "name": artist["name"],
+            "URI": artist["uri"]
+          });
+        }
+        // Get album covers
+        List<dynamic> albCovers = a["images"];
+        for(var cover in albCovers){
+          Map<String,dynamic> album = {
+            "height": cover["height"],
+            "width": cover["width"],
+            "imgURL" : cover["url"]
+          };
+          albumCovers.add(album);
+        }
+
+        ret.add(Album(uri,artists,albumCovers,albumName));
+      }
+  }
+  catch(e){
+    debugPrint(e.toString());
+  }
+
+  return ret;
+}
+
+Future<List<SongInfo>> getAlbumTracks(String uri, String authToken) async{
+  List<SongInfo> ret = [];
+  try{
+     String formatted = uri.replaceAll(new RegExp(r'spotify:album:'), "");
+      // Base url
+      String url = "https://api.spotify.com/v1/albums/$formatted/tracks";
+
+      // Format authentication token for header
+      String token = "Bearer " + authToken;
+      
+      // Get request API and wait for response
+      var response = await http.get(url, headers: {HttpHeaders.authorizationHeader: token});
+      // Parse information and return list of Song objects
+      // Decode the result
+      Map<String,dynamic> result = json.decode(response.body);
+      // Grab the tracks returned
+      List<dynamic> trackList = result["items"];
+      // iterate through and make Song objects
+      for(var track in trackList){
+        //SongInfo(this._uri, this._name);
+        ret.add(SongInfo(track["uri"], track["name"]));
+      }
+  }// end try
+  catch(e){
+    debugPrint(e);
+  }
+  return ret;
+}
+// Returns a map where key-> "songs" , "albums" , or "artists" and the value assocaited with the key
+// Is a list of objects List<Song>, List<Album>, List<Aritst>
+// *TODO implement Artist
+Future<Map<String,List<dynamic>>> fullSearch(String input, String authToken) async{
+  Map<String,List<dynamic>> ret = {};
+  Map<String,List<String>> uriMap = await search(input, authToken);
+  List<Song> songs = await searchTracks(uriMap["tracks"],authToken);
+  List<Album> albums = await searchAlbums(uriMap["albums"], authToken);
+  //List<Artist> artists = await searchArtists(uriMap["artists"], authToken);
+  List<dynamic> artists = []; // Place holder
+  ret["songs"] = songs;
+  ret["albums"] = albums;
+  ret["artists"] = artists;
+  return ret;
 }
