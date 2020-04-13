@@ -1,6 +1,4 @@
 
-import 'package:spotify_sdk/models/artist.dart';
-
 class Song{
   String _uri;
   int _votes;
