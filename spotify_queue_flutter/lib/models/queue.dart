@@ -12,7 +12,7 @@ class Queue{
   
   void addSong(Song s){
     songs.add(s);
-    songs.sort((b,a) => a.compareTo(b));
+    sortSongs();
   }
 
   Song pop(){
@@ -51,6 +51,10 @@ class Queue{
       list.add(s.toJson());
     }
     return list;
+  }
+
+  void sortSongs(){
+    songs.sort((b,a) => a.compareTo(b));
   }
   
   Map<String, dynamic> toJson() {
