@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
 import 'package:spotify_queue/models/room.dart';
-import 'package:spotify_queue/views/queueView.dart';
+import 'package:spotify_queue/views/roomPage.dart';
+import 'package:spotify_queue/widgets/queueViewAdmin.dart';
+import 'package:spotify_queue/widgets/queueViewNonAdmin.dart';
+
+
 
 
 
@@ -50,6 +54,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool creatingRoom = false;
   bool error = false;
   bool created = false;
+  TextEditingController textController = new TextEditingController();
 
   _MyHomePageState(){
     connect();
@@ -58,18 +63,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
 
   void timedCounter(Duration interval, Room r, BuildContext context, int maxIter) async {
-      debugPrint("Called");
     setState(() {
       creatingRoom = true;
     });
     int i = 0;
     while (i < maxIter) {
-      debugPrint("Here");
       await Future.delayed(interval);
       if(r.getDocID() != null){
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(builder: (context){
-            return QueueView(roomID: r.getDocID(), authToken: authenticationToken);
+            return RoomView(
+              queueView: QueueViewBuilder(roomID: r.getDocID(), authToken: authenticationToken),
+              room: r,
+              authToken: authenticationToken,
+              );
           })
         );
         return;
@@ -120,6 +127,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [];
+    
     if(authenticated){
       if(creatingRoom){
        children = <Widget>[const Padding(
@@ -144,6 +152,31 @@ class _MyHomePageState extends State<MyHomePage> {
         children.add(
           RaisedButton(onPressed: () => createRoom(context),
           child: Text("Create Room"),)
+        );
+        children.add(TextField(
+          controller: textController,
+          decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Enter room key',
+            )
+        ));
+        children.add(
+          RaisedButton(onPressed: (){
+           joinRoom(textController.text,authenticationToken).then((room){
+             if(room != null){
+              Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context){
+                          return RoomView(
+                            queueView:QueueViewBuilderNonAdmin(roomID: room.getDocID(), authToken: authenticationToken),
+                            authToken:authenticationToken,
+                            room: room,
+                            );
+                        })
+                      );
+             }
+           });
+          },
+          child: Text("Join Room"),)
         );
       }
 

@@ -28,7 +28,7 @@ abstract class DatabaseObject{
             return ref.documentID;
       }
       catch(e){
-          debugPrint("Error in saveToDatabsae: " + e.toString());
+          debugPrint("Error in saveToDatabase: " + e.toString());
           return "";
       }
     }
@@ -49,9 +49,17 @@ abstract class DatabaseObject{
   Future<bool> updateReference() async{
     try{
       Map<String,dynamic> json = toJson();
-      await Firestore.instance.collection(_collection).document(_docID).updateData(json);
+      DocumentReference ref = await Firestore.instance.collection(_collection).document(_docID);
+      Firestore.instance.runTransaction((Transaction tx) async {
+        DocumentSnapshot snapshot = await tx.get(ref);
+        if(snapshot.exists){
+          await tx.update(ref, json);
+        }
+      });
     }catch(e){
       debugPrint("Error in updateReference: " + e.toString());
+      return false;
     }
+    return true;
   }
 }

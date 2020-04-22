@@ -2,21 +2,28 @@
 class Song{
   String _uri;
   int _votes;
-  List<Map<String,dynamic>> _albumCovers; //List of maps where Key->Widgth, Height, Image URL and  Value-> Associated value
+  List<Map<String,dynamic>> _albumCovers = []; //List of maps where Key->Widgth, Height, Image URL and  Value-> Associated value
   String _albumName;
   String _songName;
-  List<String> _artists;
+  List<String> _artists = [];
   Song(this._uri, this._songName, this._albumCovers, this._albumName, this._artists){
     _votes = 0;
   }
 
   Song.fromJSON(Map<String,dynamic> json){
-      // TODO error checki
-      _uri = json["uri"];
-      _votes = json["votes"];
-      _albumCovers = json["albumCovers"];
-      _artists = json["artists"];
-      _albumName = json["albumName"];
+      if(json != null){
+        // TODO error checki
+        _uri = json["uri"];
+        _votes = json["votes"];
+        _songName = json["songName"];
+        for(var cover in json["albumCovers"]){
+          _albumCovers.add(cover);
+        }
+        for(var a in json["artists"]){
+          _artists.add(a);
+        }
+        _albumName = json["albumName"];
+      }
   }
 
   String getURI() => _uri;
@@ -24,6 +31,7 @@ class Song{
   String getFirstImgTest() => _albumCovers[0]["imgURL"];
   String getFirstArtistTest() => _artists[0];
   int getVotes() => _votes;
+
 
   int compareTo(Song s){
     if(this._votes > s._votes){
@@ -47,6 +55,7 @@ class Song{
   Map<String,dynamic> toJson(){
     return({
       'uri' : _uri,
+      'songName': _songName,
       'votes': _votes,
       'albumCovers' : _albumCovers,
       'artists' : _artists,

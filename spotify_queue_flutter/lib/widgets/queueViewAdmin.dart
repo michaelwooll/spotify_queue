@@ -4,28 +4,155 @@ import 'package:spotify_queue/widgets/songWidgets.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
 import 'package:spotify_queue/models/room.dart';
 import 'package:spotify_queue/models/song.dart';
-import 'package:spotify_queue/models/album.dart';
 
 import 'package:spotify_sdk/models/player_state.dart';
 import 'package:spotify_queue/spotifyAPI.dart';
 
 
-
-
-
-
-class QueuePage extends StatelessWidget{
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Queue',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: QueueView(),
-    );
-   } // build
+class QueueViewBuilder extends StatefulWidget {
+  QueueViewBuilder({Key key, this.roomID,this.authToken}):super(key:key);
+  final String roomID;
+  final String authToken;
+  @override
+  _QueueViewBuilderState createState() => _QueueViewBuilderState();
 }
 
+class _QueueViewBuilderState extends State<QueueViewBuilder> {
+  TextEditingController searchCon = new TextEditingController();
+  bool queueControllerInitialized = false;
+  Room r;
+  // Talks to spotify sdk to handle queue
+  Future<void> queueController() async{
+    queueControllerInitialized = true;
+    int timeLeft;
+    while(true){
+      await Future.delayed(Duration(milliseconds: 100));
+      PlayerState state = await SpotifySdk.getPlayerState();
+      if(state.track != null){
+        timeLeft = state.track.duration - state.playbackPosition;
+
+        if(timeLeft <= 3000){
+          if(r != null){
+            Song song = await r.pop();
+            if(song != null){
+              SpotifySdk.queue(spotifyUri: song.getURI());
+              await Future.delayed(Duration(seconds: 5));
+            }
+          }
+        }
+      }
+    }
+  }
+
+  void test(String input, Room room) async {
+    Map<String,List<dynamic>> results = await fullSearch(input,widget.authToken);
+    List<Song> songs = results["songs"];
+    for(var i = 0; i < 3 && i != songs.length; i++){
+      Song s = songs[i];
+      await room.addSong(s);
+    }
+    if(room.getCurrentSong() == null){
+        Song song = await room.pop();
+        SpotifySdk.play(spotifyUri: song.getURI());
+    }
+}
+
+  @override
+  Widget build(BuildContext context) { 
+    String roomKey = "";
+    return StreamBuilder(
+      stream: Firestore.instance.collection("room").document(widget.roomID).snapshots(),
+      builder: (context, snapshot){
+        List<Widget> children = [];
+        if(!snapshot.hasData){
+          // Add padding
+          children.add(
+            const Padding(
+              padding: EdgeInsets.only(top: 100),
+            )
+          );
+          children.add(
+            Center(
+              child: SizedBox(
+              child: CircularProgressIndicator(),
+              width: 100,
+              height: 100,
+              )
+            )
+          );
+          children.add(
+            const Padding(
+              padding: EdgeInsets.only(top: 20),
+              child: Center(
+                child: Text('Creating room...'),
+              )
+            )
+          );
+        }
+        else if(snapshot.hasError){
+          roomKey = "ERROR";
+          children.add(Text("Error has occured"));
+        }
+        else if(snapshot.hasData && snapshot.data.data != null){
+          r = new Room.fromDocumentSnapshot(snapshot.data);
+          roomKey = r.getRoomKey();
+          r.sortQueue();
+          if(!queueControllerInitialized){
+            queueController();
+          }
+          // Search bar
+          children.add(TextField(
+            controller: searchCon,
+            decoration: InputDecoration(
+              border: OutlineInputBorder(),
+              labelText: 'Search',
+            )
+          ));
+           children.add(
+            RaisedButton(
+              onPressed: () => test(searchCon.text,r),
+              child:Text("Test add songs")
+            )
+          );
+
+         // Show the current queue
+          if(!r.queueIsEmpty()){
+            r.getSongs().asMap().forEach((index,song){
+                children.add(
+                  GestureDetector(
+                    child: SongCard(song: song), 
+                    onTap: (){
+                      r.vote(index);
+                    }
+                    ,)
+                  );
+            });
+          } // end queue is not empty            
+            else{
+              children.add(Text("Queue is currently empty"));
+            }
+          // Show current song
+          if(r.getCurrentSong() != null){
+            children.add(
+              Column(
+                children: <Widget>[
+                  Text("Now Playing:"),
+                  SongCard(song: r.getCurrentSong())
+                ]));
+          }
+          } // end snapshot
+        
+        return Center(
+            child: Column(
+              children: children,
+            ),
+        );
+      } // end build 
+    );
+  }
+}
+
+/*
 class QueueView extends StatefulWidget {
   QueueView({Key key, this.roomID,this.authToken}):super(key:key);
   final String roomID;
@@ -53,29 +180,7 @@ class _QueueViewState extends State<QueueView> {
     });
   }
 
-  Future<void> queueController() async{
-    int timeLeft;
-    while(true){
-      await Future.delayed(Duration(milliseconds: 100));
-      PlayerState state = await SpotifySdk.getPlayerState();
-      if(state.track != null){
-        timeLeft = state.track.duration - state.playbackPosition;
- 
-        if(timeLeft <= 3000){
-          if(room != null){
-            Song song = await room.pop();
-            setState(() {
-                currentSong = song;
-            });
-            if(song != null){
-              SpotifySdk.queue(spotifyUri: song.getURI());
-              await Future.delayed(Duration(seconds: 5));
-            }
-          }
-        }
-      }
-    }
-  }
+
 
   void testSearch(String input) async {
     Map<String,List<String>> results = await search(input,widget.authToken);
@@ -133,9 +238,12 @@ void test(String input) async {
   
   @override
   Widget build(BuildContext context) {
-   List<Widget> children = [];
-    if(room == null){
-       children = <Widget>[const Padding(
+    List<Widget> children = [];
+    return new StreamBuilder(
+      stream: Firestore.instance.collection("room").document(widget.roomID).snapshots(),
+      builder: (context,snapshot){
+        if(!snapshot.hasData){
+           children = <Widget>[const Padding(
               padding: EdgeInsets.only(top: 100),
             ),
             Center(
@@ -152,16 +260,16 @@ void test(String input) async {
               )
             )
        ];
-    }
-    else{
-        children.add(TextField(
+        }else{
+          Room r = new Room.fromDocumentSnapshot(snapshot.data);
+          children.add(TextField(
           controller: searchCon,
           decoration: InputDecoration(
             border: OutlineInputBorder(),
             labelText: 'Search',
           )
           ));
-        if(room.queueIsEmpty()){
+        if(r.queueIsEmpty()){
           children.add(Text("No songs currently in queue"));
           if(currentSong != null){
           children.add(
@@ -180,12 +288,12 @@ void test(String input) async {
           );
         }
         else{
-          room.getSongs().asMap().forEach((index,song){
+          r.getSongs().asMap().forEach((index,song){
               children.add(
                 GestureDetector(
                   child: SongCard(song: song), 
                   onTap: (){
-                    room.vote(index);
+                    r.vote(index);
                     setState(() {
                       
                     });
@@ -222,21 +330,28 @@ void test(String input) async {
               child:Text("Add 3 searched songs")
             )
           );
-       // children.add(playerStateWidget());
+        }// end else
+
         }
-    }
-    return Scaffold(
-            appBar: AppBar(
-        title: Text("Your room"),
-      ),
-      body: Center(
-      child: Column(
-        children: children,
-      ),
-    )
+        return Scaffold(
+          appBar: AppBar(
+            title: Text("Your room"),
+          ),
+          body: Center(
+            child: Column(
+              children: children,
+            ),
+          )
+        );
+      }
     );
   } // end build
 }
+/*
+
+
+*/
+
 
 /* Adapted from https://github.com/brim-borium/spotify_sdk/blob/develop/example/lib/main.dart */
 Widget playerStateWidget() {
@@ -285,4 +400,4 @@ Stream<PlayerState> subscribeMyPlayerState() async*{
       yield state;
     }
   }
-}
+}*/
