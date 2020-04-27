@@ -98,7 +98,7 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
           roomKey = r.getRoomKey();
           r.sortQueue();
           if(!queueControllerInitialized){
-            queueController();
+            //queueController();
           }
           // Search bar
           children.add(TextField(

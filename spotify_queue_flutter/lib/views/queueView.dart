@@ -5,7 +5,7 @@ import 'package:spotify_sdk/spotify_sdk.dart';
 import 'package:spotify_queue/models/room.dart';
 import 'package:spotify_queue/models/song.dart';
 import 'package:spotify_queue/models/album.dart';
-
+import 'package:spotify_queue/views/searchView.dart';
 import 'package:spotify_sdk/models/player_state.dart';
 import 'package:spotify_queue/spotifyAPI.dart';
 

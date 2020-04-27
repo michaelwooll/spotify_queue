@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:spotify_queue/main.dart';
 import 'package:spotify_queue/models/room.dart';
 import 'package:spotify_queue/widgets/queueViewNonAdmin.dart';
 import 'package:spotify_queue/widgets/queueViewAdmin.dart';
+import 'package:spotify_queue/views/searchView.dart';
 
 
 
@@ -10,7 +12,7 @@ class RoomView extends StatefulWidget {
   RoomView({this.queueView, this.room, this.authToken});
   final Widget queueView;
   final Room room;
-  final String authToken;
+  String authToken;
   @override
   _RoomViewState createState() => _RoomViewState();
 }
@@ -22,6 +24,9 @@ class _RoomViewState extends State<RoomView> {
     if(index == 0){
       return widget.queueView;
     }
+    if(index == 1) {
+      return SearchView(authToken: widget.authToken);
+    }
     if((index-1) >= _widgetOptions.length){
       return null;
     }
@@ -30,8 +35,15 @@ class _RoomViewState extends State<RoomView> {
     }
   }
 
-  List<Widget> _widgetOptions = <Widget>[
-    Text("Search"),
+   _navPushSearchView() {
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) {
+      return SearchView(authToken: widget.authToken);
+    }));
+  }
+
+  //Search is going to be added here, room and auth token will be passed also.
+  List<Widget> _widgetOptions = <Widget> [
+    Text(""),
     Text("Users")
   ];
 
@@ -40,7 +52,6 @@ class _RoomViewState extends State<RoomView> {
       pageIndex = index;
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +72,9 @@ class _RoomViewState extends State<RoomView> {
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.search),
-              title: Text("Search")
+              title: Text("Search"),
+
+
           ),
           BottomNavigationBarItem(
               icon: Icon(Icons.person),
