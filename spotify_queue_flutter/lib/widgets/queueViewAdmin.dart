@@ -26,31 +26,31 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
   Future<void> queueController() async{
     queueControllerInitialized = true;
     int timeLeft;
-    try{
       while(true){
-        await Future.delayed(Duration(milliseconds: 100));
-        PlayerState state = await SpotifySdk.getPlayerState();
-        if(state.track != null){
-          timeLeft = state.track.duration - state.playbackPosition;
+        try{
+          await Future.delayed(Duration(milliseconds: 100));
+          PlayerState state = await SpotifySdk.getPlayerState();
+          if(state.track != null){
+            timeLeft = state.track.duration - state.playbackPosition;
 
-          if(timeLeft <= 3000){
-            if(r != null){
-              Song song = await r.pop();
-              if(song != null){
-                SpotifySdk.queue(spotifyUri: song.getURI());
-                await Future.delayed(Duration(seconds: 5));
+            if(timeLeft <= 3000){
+              if(r != null){
+                Song song = await r.pop();
+                if(song != null){
+                  SpotifySdk.queue(spotifyUri: song.getURI());
+                  await Future.delayed(Duration(seconds: 5));
+                }
               }
             }
           }
-        }
-      }
-    }
-    catch(e){
-      //Lost connection or logged out
-      // Should probably do something here...
-      return;
-    }
-
+      } // end try
+      catch(e){
+        //Lost connection or logged out
+        // Should probably do something here...
+        debugPrint("Logged out!");
+        return;
+      }  // end catch
+    }// end while
   }
 
   void test(String input, Room room) async {
@@ -128,12 +128,20 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
             children.add(
               Column(
                 children: <Widget>[
-                  Text("Now Playing:"),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child:Text("Now Playing:",  style: TextStyle(color: Colors.white))),
                   SongCard(song: r.getCurrentSong())
                 ]));
           }
-          children.add(Text("Your queue"));
-          children.add(ScrollableQueueList(songs: r.getSongs(), room:r));
+          children.add(Padding(
+            padding: const EdgeInsets.all(10),
+            child:
+              Text("Your queue", style: TextStyle(color: Colors.white)
+              )
+            )
+          );
+          children.add(ScrollableQueueList(songs: r.getSongs(), room:r, authToken: widget.authToken));
           //children.add(Center(child:PlayerController()));
           if(r.getCurrentSong()!= null){
            // children.add(PlayerController());

@@ -206,7 +206,6 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar( 
         title: Text("Virtual DJ"),
-
       ),
       drawer: drawer,
       body: Center(

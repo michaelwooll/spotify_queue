@@ -185,7 +185,7 @@ void test(String input) async {
                 GestureDetector(
                   child: SongCard(song: song), 
                   onTap: (){
-                    room.vote(index);
+                    room.vote(index,widget.authToken);
                     setState(() {
                       
                     });

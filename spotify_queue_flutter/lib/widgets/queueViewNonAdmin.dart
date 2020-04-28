@@ -1,11 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:spotify_queue/widgets/scrollableQueueList.dart';
 import 'package:spotify_queue/widgets/songWidgets.dart';
-import 'package:spotify_sdk/spotify_sdk.dart';
 import 'package:spotify_queue/models/room.dart';
 import 'package:spotify_queue/models/song.dart';
-
-import 'package:spotify_sdk/models/player_state.dart';
 import 'package:spotify_queue/spotifyAPI.dart';
 
 
@@ -70,6 +68,7 @@ class _QueueViewBuilderNonAdminState extends State<QueueViewBuilderNonAdmin> {
           roomKey = r.getRoomKey();
           r.sortQueue();
           // Search bar
+          /*
           children.add(TextField(
             controller: searchCon,
             decoration: InputDecoration(
@@ -83,32 +82,27 @@ class _QueueViewBuilderNonAdminState extends State<QueueViewBuilderNonAdmin> {
               child:Text("Test add songs")
             )
           );
-
-         // Show the current queue
-          if(!r.queueIsEmpty()){
-            r.getSongs().asMap().forEach((index,song){
-                children.add(
-                  GestureDetector(
-                    child: SongCard(song: song), 
-                    onTap: (){
-                      r.vote(index);
-                    }
-                    ,)
-                  );
-            });
-          } // end queue is not empty            
-            else{
-              children.add(Text("Queue is currently empty"));
-            }
+        */
           // Show current song
           if(r.getCurrentSong() != null){
             children.add(
               Column(
                 children: <Widget>[
-                  Text("Now Playing:"),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child:Text("Now Playing:",  style: TextStyle(color: Colors.white))),
                   SongCard(song: r.getCurrentSong())
                 ]));
           }
+            children.add(Padding(
+            padding: const EdgeInsets.all(10),
+            child:
+              Text("Your queue", style: TextStyle(color: Colors.white)
+              )
+            )
+          );
+          children.add(ScrollableQueueList(songs: r.getSongs(), room:r, authToken: widget.authToken));
+
           } // end snapshot
         
         return 

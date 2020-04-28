@@ -61,9 +61,19 @@ class _RoomViewState extends State<RoomView> {
             title: Text("Your room key: " + widget.room.getRoomKey())
       ),
       drawer: MyDrawer(inRoom: true),
-      body: Center(
-        child: getWidgetOption(pageIndex)
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: FractionalOffset(0.2, 0.7),
+            colors: [Color(0xFF414345),Color(0xFF000000)],
+          )
+        ),
+        child:Center(
+          child: getWidgetOption(pageIndex)
+        ),
       ),
+      
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.grey[900],
         currentIndex: pageIndex,
