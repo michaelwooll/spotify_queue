@@ -65,6 +65,8 @@ class _MyHomePageState extends State<MyHomePage> {
   bool creatingRoom = false;
   bool error = false;
   bool created = false;
+  bool joinRoomError = false;
+  bool joinRoomInput = false;
   TextEditingController textController = new TextEditingController();
 
   _MyHomePageState(){
@@ -165,33 +167,69 @@ class _MyHomePageState extends State<MyHomePage> {
           RaisedButton(onPressed: (){
                   createRoom(context);
           },
-          child: Text("Create Room"),)
+          child: Text("Create Room"),
+           color: color[800],
+           shape: RoundedRectangleBorder(
+             borderRadius: new BorderRadius.circular(20.0)
+           ),
+          )
         );
-        children.add(TextField(
-          controller: textController,
-          decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Enter room key',
-            )
-        ));
+        if(joinRoomInput){
+        children.add(
+          Container(
+            child:
+            TextField(
+              style: TextStyle(color: color[900]),
+              controller: textController,
+              decoration: InputDecoration(
+                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color:color[900])),
+                labelStyle: TextStyle(color: color[900]),
+                  border: OutlineInputBorder(),
+                  labelText: 'Enter room key',
+                  suffixIcon: IconButton(
+                    icon: Icon(Icons.arrow_forward),
+                    onPressed: (){
+                      joinRoom(textController.text,authenticationToken).then((room){
+                        if(room != null){
+                          Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(builder: (context){
+                                      return RoomView(
+                                        queueView:QueueViewBuilderNonAdmin(roomID: room.getDocID(), authToken: authenticationToken),
+                                        authToken:authenticationToken,
+                                        room: room,
+                                        );
+                                    })
+                                  );
+                    }
+                  else{
+                    setState(() {
+                      joinRoomError = true;
+                  });
+                }
+              });
+              },
+                  ),
+                )
+              ),
+              width: 300,
+          )
+          );
+        }
+        else{
         children.add(
           RaisedButton(onPressed: (){
-           joinRoom(textController.text,authenticationToken).then((room){
-             if(room != null){
-              Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(builder: (context){
-                          return RoomView(
-                            queueView:QueueViewBuilderNonAdmin(roomID: room.getDocID(), authToken: authenticationToken),
-                            authToken:authenticationToken,
-                            room: room,
-                            );
-                        })
-                      );
-             }
-           });
+            setState(() {
+              joinRoomInput = true;
+            });
           },
-          child: Text("Join Room"),)
+          child: Text("Join Room"),
+          shape: RoundedRectangleBorder(
+             borderRadius: new BorderRadius.circular(20.0)
+           ),
+          color: color[800]
+          )
         );
+        }
       }
 
     }else{
@@ -200,20 +238,36 @@ class _MyHomePageState extends State<MyHomePage> {
           onPressed: connect,
           child:
             Text("Log in via spotify!"),
+                       shape: RoundedRectangleBorder(
+             borderRadius: new BorderRadius.circular(20.0)
+           ),
           color: color[700],)
       );
+    }
+
+    if(joinRoomError){
+      children.add(Center(child:Text("Error when joining room, check key and try again.", style: TextStyle(color: Colors.red))));
     }
     return Scaffold(
       appBar: AppBar( 
         title: Text("Virtual DJ"),
       ),
       drawer: drawer,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: children
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: FractionalOffset(0.2, 0.7),
+            colors: [Color(0xFF414345),Color(0xFF000000)],
+          )
         ),
-      ),
+        child:Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: children
+          ),
+        ),
+      )
     );
   }
 }
