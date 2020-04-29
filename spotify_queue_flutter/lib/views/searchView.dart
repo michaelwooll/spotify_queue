@@ -6,10 +6,13 @@ import 'package:spotify_queue/models/song.dart';
 import 'package:spotify_queue/spotifyAPI.dart';
 import 'package:spotify_queue/views/roomPage.dart';
 import 'package:spotify_queue/widgets/songWidgets.dart';
+import 'package:spotify_queue/models/room.dart';
+import 'package:spotify_sdk/spotify_sdk.dart';
 
 class SearchView extends StatefulWidget {
   final String authToken;
-  SearchView({Key key, this.authToken, /*this.room*/}):super(key : key);
+  final Room room;
+  SearchView({Key key, this.authToken, this.room}):super(key : key);
 
   @override
   _SearchViewState createState() => _SearchViewState();
@@ -40,7 +43,7 @@ class SearchView extends StatefulWidget {
           child: SearchBar<Song>(
             searchBarStyle: SearchBarStyle(
               backgroundColor: Colors.white,
-              padding: EdgeInsets.all(5),
+              padding: EdgeInsets.all(3),
               borderRadius: BorderRadius.circular(25),
 
             ),
@@ -50,6 +53,13 @@ class SearchView extends StatefulWidget {
             onItemFound: (Song song, int index) {
               return SearchCard(
                 song: song,
+                callback: () async {
+                await widget.room.addSong(song);
+                if(widget.room.getCurrentSong() == null && widget.room.getAdminToken() == widget.authToken){
+                  Song song = await widget.room.pop();
+                  SpotifySdk.play(spotifyUri: song.getURI());
+                }
+              },
               );
             },
           ),
@@ -57,8 +67,6 @@ class SearchView extends StatefulWidget {
       )
     );
   }
-
-
 }
 
 class SearchCard extends StatelessWidget {
@@ -69,11 +77,15 @@ class SearchCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context){
+    RawMaterialButton addButton = RawMaterialButton(
+      onPressed: callback,
+      child: Icon(Icons.add, color: Colors.white),
+    );
     return Center(
       child: Card(
         shape: RoundedRectangleBorder(
           side: BorderSide(color: Colors.grey, width: 1),
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(10),
         ),
         clipBehavior: Clip.antiAlias,
         color: Colors.transparent,
@@ -92,8 +104,7 @@ class SearchCard extends StatelessWidget {
                     child:Row(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
-                        //Add button widget goes here
-                        //or clickable opacity
+                        addButton,
                       ],)
                 )
               // RawMaterialButton(child: Icon(Icons.arrow_upward),onPressed: callback)),
