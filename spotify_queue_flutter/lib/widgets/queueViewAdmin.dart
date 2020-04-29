@@ -22,6 +22,7 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
   TextEditingController searchCon = new TextEditingController();
   bool queueControllerInitialized = false;
   Room r;
+
   // Talks to spotify sdk to handle queue
   Future<void> queueController() async{
     queueControllerInitialized = true;
@@ -32,14 +33,13 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
           PlayerState state = await SpotifySdk.getPlayerState();
           if(state.track != null){
             timeLeft = state.track.duration - state.playbackPosition;
-
-            if(timeLeft <= 3000){
-              if(r != null){
-                Song song = await r.pop();
-                if(song != null){
-                  SpotifySdk.queue(spotifyUri: song.getURI());
-                  await Future.delayed(Duration(seconds: 5));
+            if(timeLeft <= 3000){ // 3 seconds until current song is over
+              if(r != null){ // If room exists
+                Song song = await r.pop(); // Pop song
+                if(song != null){ // If there was a song to pop
+                  SpotifySdk.queue(spotifyUri: song.getURI()); // queue up
                 }
+                await Future.delayed(Duration(seconds: 5)); // Wait 5 seconds before checking again
               }
             }
           }

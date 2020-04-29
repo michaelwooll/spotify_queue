@@ -129,14 +129,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
 
-
-/*
-  void vote(String uri) async{
-    Queue q = await room.getQueue();
-    await q.testVote(uri);
-
-  }*/
-
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [];
@@ -250,7 +242,7 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     return Scaffold(
       appBar: AppBar( 
-        title: Text("Virtual DJ"),
+        title: Text("Pass the Aux"),
       ),
       drawer: drawer,
       body: Container(
