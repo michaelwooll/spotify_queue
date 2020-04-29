@@ -36,11 +36,11 @@ class _RoomViewState extends State<RoomView> {
     }
   }
 
-   _navPushSearchView() {
+   /*_navPushSearchView() {
     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) {
-      return SearchView(authToken: widget.authToken);
+      return SearchView(authToken: widget.authToken, room: widget.room,);
     }));
-  }
+  }*/
 
   //Search is going to be added here, room and auth token will be passed also.
   List<Widget> _widgetOptions = <Widget> [
