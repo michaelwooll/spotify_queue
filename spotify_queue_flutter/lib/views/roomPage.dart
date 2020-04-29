@@ -6,6 +6,8 @@ import 'package:spotify_queue/widgets/drawer.dart';
 import 'package:spotify_queue/widgets/queueViewNonAdmin.dart';
 import 'package:spotify_queue/widgets/queueViewAdmin.dart';
 import 'package:spotify_queue/views/searchView.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 
 
@@ -26,7 +28,7 @@ class _RoomViewState extends State<RoomView> {
       return widget.queueView;
     }
     if(index == 1) {
-      return SearchView(authToken: widget.authToken, room: widget.room,);
+      return SearchView(authToken: widget.authToken, roomStream: Firestore.instance.collection("room").document(widget.room.getDocID()).snapshots());
     }
     if((index-1) >= _widgetOptions.length){
       return null;

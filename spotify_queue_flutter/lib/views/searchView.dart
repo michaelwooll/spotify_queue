@@ -8,11 +8,13 @@ import 'package:spotify_queue/views/roomPage.dart';
 import 'package:spotify_queue/widgets/songWidgets.dart';
 import 'package:spotify_queue/models/room.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class SearchView extends StatefulWidget {
   final String authToken;
-  final Room room;
-  SearchView({Key key, this.authToken, this.room}):super(key : key);
+  final Stream<DocumentSnapshot> roomStream;
+
+  SearchView({Key key, this.authToken, this.roomStream}):super(key : key);
 
   @override
   _SearchViewState createState() => _SearchViewState();
@@ -21,6 +23,7 @@ class SearchView extends StatefulWidget {
   class _SearchViewState extends State<SearchView> {
 
   //Map<String, List<dynamic>> searchResults = new Map<String,List<dynamic>>();
+  //Stream<DocumentSnapshot> roomStream = Firestore.instance.collection("room").document(widget.roomID).snapshots();
 
   Future<List<Song>> search(String input) async {
     Map<String, List<dynamic>> results = await fullSearch(input, widget.authToken);
@@ -54,9 +57,11 @@ class SearchView extends StatefulWidget {
               return SearchCard(
                 song: song,
                 callback: () async {
-                await widget.room.addSong(song);
-                if(widget.room.getCurrentSong() == null && widget.room.getAdminToken() == widget.authToken){
-                  Song song = await widget.room.pop();
+                  DocumentSnapshot ds = await widget.roomStream.first;
+                Room currentRoom = Room.fromDocumentSnapshot(ds);
+                await currentRoom.addSong(song);
+                if(currentRoom.getCurrentSong() == null && currentRoom.getAdminToken() == widget.authToken){
+                  Song song = await currentRoom.pop();
                   SpotifySdk.play(spotifyUri: song.getURI());
                 }
               },
