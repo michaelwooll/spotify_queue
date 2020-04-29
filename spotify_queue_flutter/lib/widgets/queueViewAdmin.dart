@@ -32,14 +32,13 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
           PlayerState state = await SpotifySdk.getPlayerState();
           if(state.track != null){
             timeLeft = state.track.duration - state.playbackPosition;
-
             if(timeLeft <= 3000){
               if(r != null){
                 Song song = await r.pop();
                 if(song != null){
                   SpotifySdk.queue(spotifyUri: song.getURI());
-                  await Future.delayed(Duration(seconds: 5));
                 }
+                await Future.delayed(Duration(seconds: 5));
               }
             }
           }
