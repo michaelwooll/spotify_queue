@@ -49,6 +49,8 @@ class Room extends DatabaseObject{
 
   String getRoomKey() => _roomKey;
 
+  String getAdminToken() => _adminToken;
+
   Future<void> setRoomKey() async{
     _roomKey = randomAlphaNumeric(6);
     QuerySnapshot result = await Firestore.instance.collection("room")
