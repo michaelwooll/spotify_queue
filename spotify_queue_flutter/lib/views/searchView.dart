@@ -26,14 +26,29 @@ class SearchView extends StatefulWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
-      body: SafeArea(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(colors: [
+            Color(0xFF414345),
+            Color(0xFF000000)
+          ], begin: Alignment.topLeft, end: FractionalOffset(0.2, 0.7))
+        ),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: SearchBar<Song>(
+            searchBarStyle: SearchBarStyle(
+              backgroundColor: Colors.white,
+              padding: EdgeInsets.all(5),
+              borderRadius: BorderRadius.circular(25),
+
+            ),
+            hintText: "Search for songs...",
+            cancellationWidget: Text("Cancel", style: TextStyle(color: Colors.white),),
             onSearch: search,
             onItemFound: (Song song, int index) {
-              return SongCard(
+              return SearchCard(
                 song: song,
               );
             },
@@ -44,5 +59,51 @@ class SearchView extends StatefulWidget {
   }
 
 
+}
+
+class SearchCard extends StatelessWidget {
+  final Song song; // Event object that will hold all the event data
+  final Function callback;
+  final String authToken;
+  const SearchCard({Key key, this.song, this.callback, this.authToken}): super(key:key);
+
+  @override
+  Widget build(BuildContext context){
+    return Center(
+      child: Card(
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: Colors.grey, width: 1),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        clipBehavior: Clip.antiAlias,
+        color: Colors.transparent,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            ListTile(
+                leading: Image.network(song.getFirstImgTest()),
+                title: Text(
+                    song.getSongName(),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,color: Colors.white)
+                ),
+                subtitle: Text( song.getFirstArtistTest(),
+                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold,color: Colors.white)),
+                trailing : Container(
+                    child:Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        //Add button widget goes here
+                        //or clickable opacity
+                      ],)
+                )
+              // RawMaterialButton(child: Icon(Icons.arrow_upward),onPressed: callback)),
+              //trailing: Row(children: <Widget>[RawMaterialButton(child: Icon(Icons.arrow_upward),onPressed: callback),Text("Votes: " + song.getVotes().toString())],),
+            ),
+
+          ],
+        ),
+      ),
+    );
+  }
 }
 

@@ -4,15 +4,26 @@ import 'package:spotify_queue/models/room.dart';
 import 'package:spotify_queue/views/roomPage.dart';
 import 'package:spotify_queue/widgets/queueViewAdmin.dart';
 import 'package:spotify_queue/widgets/queueViewNonAdmin.dart';
-
-
-
+import 'package:spotify_queue/widgets/drawer.dart';
 
 
 var clientid = "ef24a50a6c864dbd8d1d364412386158";
 
 void main() => runApp(MyApp());
 String authenticationToken;
+  Map<int, Color> color =
+  {
+    50:Color.fromRGBO(30,215,96, .1),
+    100:Color.fromRGBO(30,215,96, .2),
+    200:Color.fromRGBO(30,215,96, .3),
+    300:Color.fromRGBO(30,215,96, .4),
+    400:Color.fromRGBO(30,215,96, .5),
+    500:Color.fromRGBO(30,215,96, .6),
+    600:Color.fromRGBO(30,215,96, .7),
+    700:Color.fromRGBO(30,215,96, .8),
+    800:Color.fromRGBO(30,215,96, .9),
+    900:Color.fromRGBO(30,215,96, 1),
+  };
 class MyApp extends StatelessWidget {
 
   // This widget is the root of your application.
@@ -31,7 +42,7 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: MaterialColor(0xFF1ED760,color),
       ),
       home: MyHomePage(title: 'Flutter Demo Home Page'),
     );
@@ -57,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
   TextEditingController textController = new TextEditingController();
 
   _MyHomePageState(){
-    connect();
+    //connect();
   }
 
 
@@ -127,8 +138,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     List<Widget> children = [];
-    
+    MyDrawer drawer;
     if(authenticated){
+      drawer = MyDrawer(inRoom: false);
       if(creatingRoom){
        children = <Widget>[const Padding(
               padding: EdgeInsets.only(top: 100),
@@ -150,7 +162,9 @@ class _MyHomePageState extends State<MyHomePage> {
       }
       else{
         children.add(
-          RaisedButton(onPressed: () => createRoom(context),
+          RaisedButton(onPressed: (){
+                  createRoom(context);
+          },
           child: Text("Create Room"),)
         );
         children.add(TextField(
@@ -182,13 +196,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
     }else{
       children.add(
-        RaisedButton(onPressed: connect,child: Text("Log in via spotify!"))
+        MaterialButton(
+          onPressed: connect,
+          child:
+            Text("Log in via spotify!"),
+          color: color[700],)
       );
     }
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.title),
+      appBar: AppBar( 
+        title: Text("Virtual DJ"),
       ),
+      drawer: drawer,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

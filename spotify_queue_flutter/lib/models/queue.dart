@@ -22,8 +22,8 @@ class Queue{
     return null;
   }
 
-  void vote(int songIndex){
-    songs[songIndex].vote();
+  void vote(int songIndex, String authToken){
+    songs[songIndex].vote(authToken);
     songs.sort((b,a) => a.compareTo(b));
   }
 

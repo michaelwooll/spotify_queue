@@ -6,6 +6,7 @@ class Song{
   String _albumName;
   String _songName;
   List<String> _artists = [];
+  List<String> _votedBy = [];
   Song(this._uri, this._songName, this._albumCovers, this._albumName, this._artists){
     _votes = 0;
   }
@@ -16,6 +17,9 @@ class Song{
         _uri = json["uri"];
         _votes = json["votes"];
         _songName = json["songName"];
+        for(var vote in json["votedBy"]){
+          _votedBy.add(vote);
+        }
         for(var cover in json["albumCovers"]){
           _albumCovers.add(cover);
         }
@@ -25,7 +29,7 @@ class Song{
         _albumName = json["albumName"];
       }
   }
-
+  bool isVoted(String authToken) => _votedBy.contains(authToken);
   String getURI() => _uri;
   String getSongName() => _songName;
   String getFirstImgTest() => _albumCovers[0]["imgURL"];
@@ -59,10 +63,14 @@ class Song{
       'votes': _votes,
       'albumCovers' : _albumCovers,
       'artists' : _artists,
-      "albumName": _albumName
+      "albumName": _albumName,
+      "votedBy" : _votedBy
     });
   }
 
-  void vote({int amount = 1}) => _votes += amount;
+  void vote(String authToken, {int amount = 1}) {
+     _votes += amount;
+     _votedBy.add(authToken);
+  }
 }
 

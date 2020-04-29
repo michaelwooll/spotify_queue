@@ -117,8 +117,8 @@ class Room extends DatabaseObject{
     await saveToDatabase();
     return s;
   }
-  Future<void> vote(int i) async{
-    _queue.vote(i);
+  Future<void> vote(int i, String authToken) async{
+    _queue.vote(i, authToken);
     saveToDatabase();
   }
 }
