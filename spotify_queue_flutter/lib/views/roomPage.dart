@@ -26,7 +26,7 @@ class _RoomViewState extends State<RoomView> {
       return widget.queueView;
     }
     if(index == 1) {
-      return SearchView(authToken: widget.authToken);
+      return SearchView(authToken: widget.authToken, room: widget.room,);
     }
     if((index-1) >= _widgetOptions.length){
       return null;
