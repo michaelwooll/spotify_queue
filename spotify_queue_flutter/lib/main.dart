@@ -7,8 +7,6 @@ import 'package:spotify_queue/widgets/queueViewNonAdmin.dart';
 import 'package:spotify_queue/widgets/drawer.dart';
 
 
-var clientid = "ef24a50a6c864dbd8d1d364412386158";
-
 void main() => runApp(MyApp());
 String authenticationToken;
   Map<int, Color> color =

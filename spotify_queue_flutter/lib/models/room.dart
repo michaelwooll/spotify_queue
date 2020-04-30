@@ -115,7 +115,7 @@ class Room extends DatabaseObject{
   Future<Song> pop() async{
     Song s =_queue.pop();
     _currentSong = s;
-    debugPrint("Current s= "  + s.toString());
+   // debugPrint("Current s= "  + s.toString());
     await saveToDatabase();
     return s;
   }

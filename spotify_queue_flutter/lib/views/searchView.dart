@@ -61,12 +61,8 @@ class SearchView extends StatefulWidget {
                 song: song,
                 callback: () async {
                   DocumentSnapshot ds = await widget.roomStream.first;
-                Room currentRoom = Room.fromDocumentSnapshot(ds);
-                await currentRoom.addSong(song);
-                if(currentRoom.getCurrentSong() == null && currentRoom.getAdminToken() == widget.authToken){
-                  Song song = await currentRoom.pop();
-                  SpotifySdk.play(spotifyUri: song.getURI());
-                }
+                  Room currentRoom = Room.fromDocumentSnapshot(ds);
+                  await currentRoom.addSong(song);
               },
               );
             },

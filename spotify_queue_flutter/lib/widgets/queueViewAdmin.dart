@@ -5,10 +5,12 @@ import 'package:spotify_queue/widgets/songWidgets.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
 import 'package:spotify_queue/models/room.dart';
 import 'package:spotify_queue/models/song.dart';
-
 import 'package:spotify_sdk/models/player_state.dart';
 import 'package:spotify_queue/spotifyAPI.dart';
 
+
+bool queueControllerInitialized = false;
+bool started = false;
 
 class QueueViewBuilder extends StatefulWidget {
   QueueViewBuilder({Key key, this.roomID,this.authToken}):super(key:key);
@@ -20,51 +22,59 @@ class QueueViewBuilder extends StatefulWidget {
 
 class _QueueViewBuilderState extends State<QueueViewBuilder> {
   TextEditingController searchCon = new TextEditingController();
-  bool queueControllerInitialized = false;
+  //bool queueControllerInitialized = false;
   Room r;
 
   // Talks to spotify sdk to handle queue
-  Future<void> queueController() async{
+  Future<void> queueController(String roomID) async{
     queueControllerInitialized = true;
     int timeLeft;
+    Room currentRoom;
+    Stream<DocumentSnapshot> roomStream = Firestore.instance.collection("room").document(r.getDocID()).snapshots();
+    DocumentSnapshot ds = await roomStream.first;
+    currentRoom = new Room.fromDocumentSnapshot(ds);
       while(true){
         try{
-          await Future.delayed(Duration(milliseconds: 100));
-          PlayerState state = await SpotifySdk.getPlayerState();
-          if(state.track != null){
-            timeLeft = state.track.duration - state.playbackPosition;
-            if(timeLeft <= 3000){ // 3 seconds until current song is over
-              if(r != null){ // If room exists
-                Song song = await r.pop(); // Pop song
-                if(song != null){ // If there was a song to pop
-                  SpotifySdk.queue(spotifyUri: song.getURI()); // queue up
+          if(started){
+            await Future.delayed(Duration(milliseconds: 100));
+            PlayerState state = await SpotifySdk.getPlayerState();
+            if(state.track != null && !state.isPaused){
+              timeLeft = state.track.duration - state.playbackPosition;
+              if(timeLeft <= 3000){ // 3 seconds until current song is over
+                if(r != null){ // If room exists
+                  DocumentSnapshot ds = await roomStream.first;
+                  currentRoom = new Room.fromDocumentSnapshot(ds);
+                  Song song = await currentRoom.pop(); // Pop song
+                  if(song != null){ // If there was a song to pop
+                    SpotifySdk.queue(spotifyUri: song.getURI()); // queue up
+                    await Future.delayed(Duration(seconds: 5));
+                  }
                 }
-                await Future.delayed(Duration(seconds: 5)); // Wait 5 seconds before checking again
               }
             }
+          } // if started
+          else{ // if not started
+            DocumentSnapshot ds = await roomStream.first;
+            currentRoom = new Room.fromDocumentSnapshot(ds);
+            Song song = await currentRoom.pop(); // Pop song
+            if(song != null){ // If there was a song to pop
+              SpotifySdk.play(spotifyUri: song.getURI()); // queue up
+              started= true;
+              await Future.delayed(Duration(seconds: 5));
+            }
           }
-      } // end try
-      catch(e){
-        //Lost connection or logged out
-        // Should probably do something here...
-        debugPrint("Logged out!");
-        return;
-      }  // end catch
-    }// end while
+        } // end try
+        catch(e){
+          //Lost connection or logged out
+          // Should probably do something here...
+          debugPrint("Logged out!");
+          queueControllerInitialized = false;
+          started = false;
+          return;
+        }  // end catch
+      }// end while
   }
 
-  void test(String input, Room room) async {
-    Map<String,List<dynamic>> results = await fullSearch(input,widget.authToken);
-    List<Song> songs = results["songs"];
-    for(var i = 0; i < 3 && i != songs.length; i++){
-      Song s = songs[i];
-      await room.addSong(s);
-    }
-    if(room.getCurrentSong() == null){
-        Song song = await room.pop();
-        SpotifySdk.play(spotifyUri: song.getURI());
-    }
-}
 
   @override
   Widget build(BuildContext context) { 
@@ -107,23 +117,9 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
           roomKey = r.getRoomKey();
           r.sortQueue();
           if(!queueControllerInitialized){
-            queueController();
+            queueController(widget.roomID);
           }
-          // Search bar
-          
-          children.add(TextField(
-            controller: searchCon,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Search',
-            )
-          ));
-           children.add(
-            RaisedButton(
-              onPressed: () => test(searchCon.text,r),
-              child:Text("Test add songs")
-            )
-          );
+
           if(r.getCurrentSong() != null){
             children.add(
               Column(
@@ -146,7 +142,6 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
           if(r.getCurrentSong()!= null){
            // children.add(PlayerController());
           }
-       
           } // end snapshot
         
         return Center(
