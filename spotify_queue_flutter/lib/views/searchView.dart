@@ -57,9 +57,15 @@ class SearchView extends StatefulWidget {
               return SearchCard(
                 song: song,
                 callback: () async {
+                  try{
                   DocumentSnapshot ds = await widget.roomStream.first;
                   Room currentRoom = Room.fromDocumentSnapshot(ds);
                   await currentRoom.addSong(song);
+                  }
+                  catch(e){
+                    // do something
+                    debugPrint(e.toString());
+                  }
               },
               );
             },

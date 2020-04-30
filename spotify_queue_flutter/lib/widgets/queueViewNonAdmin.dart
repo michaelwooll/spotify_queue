@@ -3,8 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:spotify_queue/widgets/scrollableQueueList.dart';
 import 'package:spotify_queue/widgets/songWidgets.dart';
 import 'package:spotify_queue/models/room.dart';
-import 'package:spotify_queue/models/song.dart';
-import 'package:spotify_queue/spotifyAPI.dart';
 
 
 class QueueViewBuilderNonAdmin extends StatefulWidget {
@@ -17,16 +15,7 @@ class QueueViewBuilderNonAdmin extends StatefulWidget {
 
 class _QueueViewBuilderNonAdminState extends State<QueueViewBuilderNonAdmin> {
   TextEditingController searchCon = new TextEditingController();
-  // Talks to spotify sdk to handle queue
-  
-  void test(String input, Room room) async {
-    Map<String,List<dynamic>> results = await fullSearch(input,widget.authToken);
-    List<Song> songs = results["songs"];
-    for(var i = 0; i < 3 && i != songs.length; i++){
-      Song s = songs[i];
-      await room.addSong(s);
-    }
-}
+
   @override
   Widget build(BuildContext context) { 
     String roomKey = "";
@@ -67,23 +56,6 @@ class _QueueViewBuilderNonAdminState extends State<QueueViewBuilderNonAdmin> {
           Room r = new Room.fromDocumentSnapshot(snapshot.data);
           roomKey = r.getRoomKey();
           r.sortQueue();
-          // Search bar
-          /*
-          children.add(TextField(
-            controller: searchCon,
-            decoration: InputDecoration(
-              border: OutlineInputBorder(),
-              labelText: 'Search',
-            )
-          ));
-           children.add(
-            RaisedButton(
-              onPressed: () => test(searchCon.text,r),
-              child:Text("Test add songs")
-            )
-          );
-        */
-          // Show current song
           if(r.getCurrentSong() != null){
             children.add(
               Column(

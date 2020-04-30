@@ -47,7 +47,7 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
                   Song song = await currentRoom.pop(); // Pop song
                   if(song != null){ // If there was a song to pop
                     SpotifySdk.queue(spotifyUri: song.getURI()); // queue up
-                    await Future.delayed(Duration(seconds: 5));
+                    await Future.delayed(Duration(seconds: 3, milliseconds: 500));
                   }
                 }
               }
@@ -60,7 +60,7 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
             if(song != null){ // If there was a song to pop
               SpotifySdk.play(spotifyUri: song.getURI()); // queue up
               started= true;
-              await Future.delayed(Duration(seconds: 5));
+              await Future.delayed(Duration(seconds: 3, milliseconds: 500));
             }
           }
         } // end try
