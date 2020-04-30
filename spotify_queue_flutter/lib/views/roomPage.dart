@@ -8,9 +8,6 @@ import 'package:spotify_queue/widgets/queueViewAdmin.dart';
 import 'package:spotify_queue/views/searchView.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-
-
-
 class RoomView extends StatefulWidget {
   RoomView({this.queueView, this.room, this.authToken});
   final Widget queueView;
@@ -38,11 +35,11 @@ class _RoomViewState extends State<RoomView> {
     }
   }
 
-   _navPushSearchView() {
+   /*_navPushSearchView() {
     Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) {
       return SearchView(authToken: widget.authToken, room: widget.room,);
     }));
-  }
+  }*/
 
   //Search is going to be added here, room and auth token will be passed also.
   List<Widget> _widgetOptions = <Widget> [
