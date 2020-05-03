@@ -35,11 +35,6 @@ class _RoomViewState extends State<RoomView> {
     }
   }
 
-<<<<<<< HEAD
-  
-
-=======
->>>>>>> 5f30daec712c08ee7c16d9143983342e3971419a
   //Search is going to be added here, room and auth token will be passed also.
   List<Widget> _widgetOptions = <Widget> [
     Text(""),
