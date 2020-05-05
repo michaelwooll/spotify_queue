@@ -7,6 +7,8 @@ import 'package:spotify_queue/models/room.dart';
 import 'package:spotify_queue/models/song.dart';
 import 'package:spotify_sdk/models/player_state.dart';
 import 'package:spotify_queue/spotifyAPI.dart';
+import 'package:spotify_queue/myPlayerState.dart';
+import 'package:spotify_queue/widgets/playerController.dart';
 
 
 bool queueControllerInitialized = false;
@@ -24,6 +26,7 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
   TextEditingController searchCon = new TextEditingController();
   //bool queueControllerInitialized = false;
   Room r;
+
 
   // Talks to spotify sdk to handle queue
   Future<void> queueController(String roomID) async{
@@ -140,7 +143,7 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
           children.add(ScrollableQueueList(songs: r.getSongs(), room:r, authToken: widget.authToken));
           //children.add(Center(child:PlayerController()));
           if(r.getCurrentSong()!= null){
-           // children.add(PlayerController());
+            children.add(playerController());
           }
           } // end snapshot
         
