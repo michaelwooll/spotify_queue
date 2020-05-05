@@ -46,12 +46,15 @@ class SearchView extends StatefulWidget {
           child: SearchBar<Song>(
             searchBarStyle: SearchBarStyle(
               backgroundColor: Colors.white,
-              padding: EdgeInsets.all(3),
+              padding: EdgeInsets.all(5),
               borderRadius: BorderRadius.circular(25),
-
             ),
             hintText: "Search for songs...",
             cancellationWidget: Text("Cancel", style: TextStyle(color: Colors.white),),
+            mainAxisSpacing: 2,
+            searchBarPadding: EdgeInsets.symmetric(horizontal: 0),
+            headerPadding: EdgeInsets.symmetric(horizontal: 0),
+            listPadding: EdgeInsets.symmetric(horizontal: 0),
             onSearch: search,
             onItemFound: (Song song, int index) {
               return SearchCard(

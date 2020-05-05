@@ -5,10 +5,11 @@ import 'package:spotify_queue/models/database.dart';
 import 'package:spotify_queue/models/queue.dart';
 import 'package:spotify_queue/models/song.dart';
 import 'package:random_string/random_string.dart';
-
+import 'package:spotify_queue/models/user.dart';
 
 class Room extends DatabaseObject{
   String _adminToken;
+  String _userName;
   Queue _queue = new Queue();
   List<String> _users = [];
   Song _currentSong;
@@ -91,8 +92,6 @@ class Room extends DatabaseObject{
         'key' : _roomKey
       });
     }
-
-
   }
 
   Future<bool> addUser(String userToken) async{

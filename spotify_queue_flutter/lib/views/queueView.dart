@@ -9,11 +9,6 @@ import 'package:spotify_queue/views/searchView.dart';
 import 'package:spotify_sdk/models/player_state.dart';
 import 'package:spotify_queue/spotifyAPI.dart';
 
-
-
-
-
-
 class QueuePage extends StatelessWidget{
   Widget build(BuildContext context) {
     return MaterialApp(

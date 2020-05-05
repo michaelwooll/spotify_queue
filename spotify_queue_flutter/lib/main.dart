@@ -5,6 +5,7 @@ import 'package:spotify_queue/views/roomPage.dart';
 import 'package:spotify_queue/widgets/queueViewAdmin.dart';
 import 'package:spotify_queue/widgets/queueViewNonAdmin.dart';
 import 'package:spotify_queue/widgets/drawer.dart';
+import 'package:spotify_queue/models/user.dart';
 
 
 void main() => runApp(MyApp());
@@ -71,8 +72,6 @@ class _MyHomePageState extends State<MyHomePage> {
     //connect();
   }
 
-
-
   void timedCounter(Duration interval, Room r, BuildContext context, int maxIter) async {
     setState(() {
       creatingRoom = true;
@@ -125,7 +124,6 @@ class _MyHomePageState extends State<MyHomePage> {
     Room r = new Room(authenticationToken);
     timedCounter(Duration(milliseconds: 500), r, context, 10);
   }
-
 
   @override
   Widget build(BuildContext context) {
