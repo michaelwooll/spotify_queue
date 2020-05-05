@@ -6,12 +6,13 @@ import 'package:spotify_queue/models/queue.dart';
 import 'package:spotify_queue/models/song.dart';
 import 'package:random_string/random_string.dart';
 import 'package:spotify_queue/models/user.dart';
+import 'package:spotify_queue/spotifyAPI.dart';
 
 class Room extends DatabaseObject{
   String _adminToken;
   String _userName;
   Queue _queue = new Queue();
-  List<String> _users = [];
+  List<UserInfo> _users = [];
   Song _currentSong;
   String _roomKey;
 
@@ -19,8 +20,12 @@ class Room extends DatabaseObject{
     _users = [];
     _currentSong = null;
     setRoomKey().then((value){
-      saveToDatabase().then((docID){
-        setDocID(docID);
+      getUser(_adminToken).then((userName){
+        UserInfo user = UserInfo(_adminToken,userName);
+        _users.add(user);
+         saveToDatabase().then((docID){
+          setDocID(docID);
+        });
       });
     });
   }
@@ -35,7 +40,7 @@ class Room extends DatabaseObject{
       _currentSong = null;
     }
     for(var u in ds.data["users"]){
-      _users.add(u);
+      _users.add(UserInfo.fromJSON(u));
     }
     setDocID(ds.documentID);
   }
@@ -66,6 +71,14 @@ class Room extends DatabaseObject{
     _queue.sortSongs();
   }
 
+  List<Map<String,dynamic>> userListToJSON(){
+    List<Map<String,dynamic>> users = [];
+    for(var user in _users){
+      users.add(user.toJSON());
+    }
+    return users;
+  }
+
   Song getCurrentSong() => _currentSong;
 
 
@@ -77,7 +90,7 @@ class Room extends DatabaseObject{
       {
         'adminToken' : _adminToken,
         'queue' : _queue.toJson(),
-        'users' :_users,
+        'users' : userListToJSON(),
         'currentSong':null,
         'key' : _roomKey
       });
@@ -94,9 +107,9 @@ class Room extends DatabaseObject{
     }
   }
 
-  Future<bool> addUser(String userToken) async{
+  Future<bool> addUser(UserInfo user) async{
     try{
-      _users.add(userToken);
+      _users.add(user);
       updateReference();
       return true;
     }catch(e){
@@ -131,7 +144,7 @@ Future<Room> getRoomById(String docID) async{
   return Room.fromDocumentSnapshot(doc);
 }
 
-Future<Room> joinRoom(String key, String userName) async{
+Future<Room> joinRoom(String key, String authToken) async{
   QuerySnapshot result = await Firestore.instance.collection("room")
   .where('key', isEqualTo: key)
   .getDocuments();
@@ -140,7 +153,9 @@ Future<Room> joinRoom(String key, String userName) async{
   }
   else{
     Room r = Room.fromDocumentSnapshot(result.documents.first);
-    r.addUser(userName);
+    String userName = await getUser(authToken);
+    UserInfo user = UserInfo(authToken,userName);
+    r.addUser(user);
     return r;
   }
 

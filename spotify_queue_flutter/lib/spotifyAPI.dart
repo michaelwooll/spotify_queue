@@ -275,24 +275,27 @@ Future<List<SongInfo>> getAlbumTracks(String uri, String authToken) async{
   return ret;
 }
 
-Future<Map<String,dynamic>> getUser(String authToken) async {
+Future<String> getUser(String authToken) async {
   Map<String,dynamic> userName = {};
   try {
     //Base URL
     String url = "https://api.spotify.com/v1/me";
     //Get response/wait for response
+
+    // Format authentication token for header
+    String token = "Bearer " + authToken;
     var res = await http.get(url, headers: {
-      HttpHeaders.authorizationHeader: authToken
+      HttpHeaders.authorizationHeader: token
     });
     //parse json
     Map<String,dynamic> result = json.decode(res.body);
-    UserInfo(result["display_name"]);
-    userName = result;
+    debugPrint(result.toString());
+    return result["display_name"];
   }
   catch(e) {
     debugPrint(e.toString());
+    return "";
   }
-  return userName;
 }
 // Returns a map where key-> "songs" , "albums" , or "artists" and the value assocaited with the key
 // Is a list of objects List<Song>, List<Album>, List<Aritst>

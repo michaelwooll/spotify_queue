@@ -30,7 +30,7 @@ class _RoomViewState extends State<RoomView> {
       return SearchView(authToken: widget.authToken, roomStream: Firestore.instance.collection("room").document(widget.room.getDocID()).snapshots());
     }
     if(index == 2) {
-      return UserView(authToken: widget.authToken, roomStream: Firestore.instance.collection("room").document(widget.room.getDocID()).snapshots());
+      return UserView(roomID: widget.room.getDocID());
     }
     if((index-1) >= _widgetOptions.length){
       return null;
