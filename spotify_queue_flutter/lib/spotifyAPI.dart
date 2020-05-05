@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:spotify_queue/models/song.dart';
 import 'package:spotify_queue/models/album.dart';
+import 'package:spotify_queue/models/user.dart';
 
 
 /// Takes in a [input] search string, an [authToken], and a [limit] which defaults to 20
@@ -272,6 +273,26 @@ Future<List<SongInfo>> getAlbumTracks(String uri, String authToken) async{
     debugPrint(e);
   }
   return ret;
+}
+
+Future<Map<String,dynamic>> getUser(String authToken) async {
+  Map<String,dynamic> userName = {};
+  try {
+    //Base URL
+    String url = "https://api.spotify.com/v1/me";
+    //Get response/wait for response
+    var res = await http.get(url, headers: {
+      HttpHeaders.authorizationHeader: authToken
+    });
+    //parse json
+    Map<String,dynamic> result = json.decode(res.body);
+    UserInfo(result["display_name"]);
+    userName = result;
+  }
+  catch(e) {
+    debugPrint(e.toString());
+  }
+  return userName;
 }
 // Returns a map where key-> "songs" , "albums" , or "artists" and the value assocaited with the key
 // Is a list of objects List<Song>, List<Album>, List<Aritst>

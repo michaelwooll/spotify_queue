@@ -9,6 +9,7 @@ import 'package:spotify_queue/models/user.dart';
 
 class Room extends DatabaseObject{
   String _adminToken;
+  String _userName;
   Queue _queue = new Queue();
   List<String> _users = [];
   Song _currentSong;

@@ -2,11 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:spotify_queue/main.dart';
 import 'package:spotify_queue/models/room.dart';
+import 'package:spotify_queue/spotifyAPI.dart';
 import 'package:spotify_queue/widgets/drawer.dart';
 import 'package:spotify_queue/widgets/queueViewNonAdmin.dart';
 import 'package:spotify_queue/widgets/queueViewAdmin.dart';
 import 'package:spotify_queue/views/searchView.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:spotify_queue/views/userView.dart';
 
 class RoomView extends StatefulWidget {
   RoomView({this.queueView, this.room, this.authToken});
@@ -26,6 +28,9 @@ class _RoomViewState extends State<RoomView> {
     }
     if(index == 1) {
       return SearchView(authToken: widget.authToken, roomStream: Firestore.instance.collection("room").document(widget.room.getDocID()).snapshots());
+    }
+    if(index == 2) {
+      return UserView(authToken: widget.authToken, roomStream: Firestore.instance.collection("room").document(widget.room.getDocID()).snapshots());
     }
     if((index-1) >= _widgetOptions.length){
       return null;
