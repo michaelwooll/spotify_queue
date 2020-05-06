@@ -6,13 +6,12 @@ import 'package:spotify_sdk/spotify_sdk.dart';
 import 'package:spotify_queue/models/room.dart';
 import 'package:spotify_queue/models/song.dart';
 import 'package:spotify_sdk/models/player_state.dart';
-import 'package:spotify_queue/spotifyAPI.dart';
-import 'package:spotify_queue/myPlayerState.dart';
 import 'package:spotify_queue/widgets/playerController.dart';
 
 
 bool queueControllerInitialized = false;
 bool started = false;
+bool loggedOut = false;
 
 class QueueViewBuilder extends StatefulWidget {
   QueueViewBuilder({Key key, this.roomID,this.authToken}):super(key:key);
@@ -53,6 +52,9 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
                     SpotifySdk.queue(spotifyUri: song.getURI()); // queue up
                     await Future.delayed(Duration(seconds: 3, milliseconds: 500));
                   }
+                  else{
+                    started = false;
+                  }
                 }
               }
             }
@@ -71,10 +73,24 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
         catch(e){
           //Lost connection or logged out
           // Should probably do something here...
-          debugPrint("Logged out!");
-          queueControllerInitialized = false;
-          started = false;
-          return;
+          if(loggedOut){
+            debugPrint("Logged out!");
+            queueControllerInitialized = false;
+            started = false;
+            return;
+          }
+          else{
+            try{
+
+            await SpotifySdk.connectToSpotifyRemote(
+              clientId: "ef24a50a6c864dbd8d1d364412386158", redirectUrl:"http://mysite.com/callback/");
+              loggedOut = false;
+            }
+            catch(e){
+              debugPrint("Failed to reconnect");
+              debugPrint(e.toString());
+            }
+          }
         }  // end catch
       }// end while
   }
@@ -82,6 +98,7 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
   @override
   Widget build(BuildContext context) { 
     String roomKey = "";
+    loggedOut = false;
     return StreamBuilder(
       stream: Firestore.instance.collection("room").document(widget.roomID).snapshots(),
       builder: (context, snapshot){

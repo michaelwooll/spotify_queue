@@ -5,7 +5,6 @@ import 'package:spotify_queue/views/roomPage.dart';
 import 'package:spotify_queue/widgets/queueViewAdmin.dart';
 import 'package:spotify_queue/widgets/queueViewNonAdmin.dart';
 import 'package:spotify_queue/widgets/drawer.dart';
-import 'package:spotify_queue/models/user.dart';
 
 
 void main() => runApp(MyApp());

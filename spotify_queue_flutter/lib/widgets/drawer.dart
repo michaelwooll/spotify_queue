@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:spotify_sdk/spotify_sdk.dart';
 import 'package:spotify_queue/main.dart';
+import 'package:spotify_queue/widgets/queueViewAdmin.dart';
 
 class MyDrawer extends StatelessWidget {
   final bool inRoom;
@@ -14,6 +15,7 @@ class MyDrawer extends StatelessWidget {
         title: Text('Logout!'),
         onTap: () {
           SpotifySdk.logout().then((value){
+            loggedOut = true;
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(builder: (context){
                   return MyApp();

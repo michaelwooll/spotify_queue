@@ -36,7 +36,7 @@ Widget playerController() {
                   shape: CircleBorder(),
                   )
             ]),
-            padding: EdgeInsets.all(25),
+            padding: EdgeInsets.all(8),
           );
         }
         else{
@@ -51,7 +51,7 @@ Widget playerController() {
                   shape: CircleBorder(),
                   )
             ]),
-            padding: EdgeInsets.all(25),
+            padding: EdgeInsets.all(8),
           );
         }
       } // end has data
@@ -67,7 +67,7 @@ Widget playerController() {
                   shape: CircleBorder(),
                   )
             ]),
-            padding: EdgeInsets.all(25),
+            padding: EdgeInsets.all(8),
           );
     },
   );
