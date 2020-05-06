@@ -100,7 +100,7 @@ class Room extends DatabaseObject{
       {
         'adminToken' : _adminToken,
         'queue' : _queue.toJson(),
-        'users' :_users,
+        'users' : userListToJSON(),
         'currentSong':_currentSong.toJson(),
         'key' : _roomKey
       });
@@ -110,7 +110,7 @@ class Room extends DatabaseObject{
   Future<bool> addUser(UserInfo user) async{
     try{
       _users.add(user);
-      updateReference();
+      saveToDatabase();
       return true;
     }catch(e){
       debugPrint("Error adding user: " + e.toString());
@@ -127,7 +127,6 @@ class Room extends DatabaseObject{
   Future<Song> pop() async{
     Song s =_queue.pop();
     _currentSong = s;
-   // debugPrint("Current s= "  + s.toString());
     await saveToDatabase();
     return s;
   }

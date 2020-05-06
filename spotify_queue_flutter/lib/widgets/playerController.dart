@@ -23,7 +23,6 @@ Widget playerController() {
     stream: subscribeMyPlayerState(),
     builder: (BuildContext context, AsyncSnapshot<PlayerState> snapshot){
       if(snapshot.hasData){
-        debugPrint("HERE");
         var playerState = snapshot.data;
         if(playerState.isPaused){
           return Container(

@@ -28,6 +28,7 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
   Room r;
 
 
+
   // Talks to spotify sdk to handle queue
   Future<void> queueController(String roomID) async{
     queueControllerInitialized = true;
@@ -77,7 +78,6 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
         }  // end catch
       }// end while
   }
-
 
   @override
   Widget build(BuildContext context) { 
@@ -143,6 +143,7 @@ class _QueueViewBuilderState extends State<QueueViewBuilder> {
           children.add(ScrollableQueueList(songs: r.getSongs(), room:r, authToken: widget.authToken));
           //children.add(Center(child:PlayerController()));
           if(r.getCurrentSong()!= null){
+            children.add(Text("Test"));
             children.add(playerController());
           }
           } // end snapshot
